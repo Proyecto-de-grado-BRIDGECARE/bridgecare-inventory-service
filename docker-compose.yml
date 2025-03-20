@@ -1,5 +1,5 @@
 services:
-  auth-service:
+  inventory-service:
     build:
       context: .
     ports:
