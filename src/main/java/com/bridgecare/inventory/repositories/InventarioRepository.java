@@ -8,5 +8,5 @@ import com.bridgecare.common.models.entities.Puente;
 import com.bridgecare.inventory.models.entities.Inventario;
 
 public interface InventarioRepository extends JpaRepository<Inventario, Long> {
-    Optional<Inventario> findByBridge(Puente puente);
+    Optional<Inventario> findByPuente(Puente puente);
 }
