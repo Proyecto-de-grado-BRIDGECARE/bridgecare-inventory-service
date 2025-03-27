@@ -2,10 +2,12 @@ package com.bridgecare.inventory.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 
 import com.bridgecare.inventory.models.dtos.InventarioDTO;
 import com.bridgecare.inventory.services.InventarioService;
@@ -15,10 +17,10 @@ import com.bridgecare.inventory.services.InventarioService;
 public class InventarioController {
     @Autowired
     private InventarioService inventarioService;
-
-    @PostMapping
-    public ResponseEntity<String> createInventario(@RequestBody InventarioDTO request) {
-        Long inventarioId = inventarioService.saveInventario(request);
+    
+    @PostMapping("/add")
+    public ResponseEntity<String> addInventario(@RequestBody InventarioDTO request, Authentication authentication) {
+        Long inventarioId = inventarioService.saveInventario(request, authentication);
         return ResponseEntity.ok("Inventario created with ID: " + inventarioId);
     }
 }
