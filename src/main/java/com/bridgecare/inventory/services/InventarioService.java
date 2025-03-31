@@ -1,5 +1,7 @@
 package com.bridgecare.inventory.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -10,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.bridgecare.common.models.dtos.PuenteDTO;
 import com.bridgecare.common.models.dtos.UsuarioDTO;
 import com.bridgecare.common.models.entities.Puente;
 import com.bridgecare.common.models.entities.Usuario;
@@ -97,4 +100,47 @@ public class InventarioService {
         }
         throw new IllegalStateException("No JWT token found in authentication");
     }
+
+    public List<InventarioDTO> getAllInventariosDTO() {
+        List<Inventario> inventarios = inventarioRepository.findAll();
+
+        return inventarios.stream()
+            .map(this::mapToDTO)
+            .toList();
+    }
+
+    private InventarioDTO mapToDTO(Inventario inventario) {
+        InventarioDTO dto = new InventarioDTO();
+        dto.setObservaciones(inventario.getObservaciones());
+
+        dto.setUsuario(mapUsuarioToDTO(inventario.getUsuario()));
+        dto.setPuente(mapPuenteToDTO(inventario.getPuente()));
+        
+        return dto;
+    }
+
+    private UsuarioDTO mapUsuarioToDTO(Usuario usuario) {
+        UsuarioDTO dto = new UsuarioDTO();
+        dto.setId(usuario.getId());
+        dto.setNombres(usuario.getNombres());
+        dto.setApellidos(usuario.getApellidos());
+        dto.setCorreo(usuario.getCorreo());
+        dto.setTipoUsuario(usuario.getTipoUsuario());
+        dto.setIdentificacion(usuario.getIdentificacion());
+        dto.setMunicipio(usuario.getMunicipio());
+        return dto;
+    }
+
+    private PuenteDTO mapPuenteToDTO(Puente puente) {
+        PuenteDTO dto = new PuenteDTO();
+        dto.setId(puente.getId());
+        dto.setNombre(puente.getNombre());
+        dto.setIdentif(puente.getIdentif());
+        dto.setCarretera(puente.getCarretera());
+        dto.setPr(puente.getPr());
+        dto.setRegional(puente.getRegional());
+        return dto;
+    }
+
+    
 }
