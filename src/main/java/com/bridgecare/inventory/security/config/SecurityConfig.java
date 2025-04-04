@@ -25,8 +25,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/inventario/add").authenticated()
-                .anyRequest().permitAll()
+                .requestMatchers("/api/inventario", "/api/inventario/**").permitAll()
+                // .requestMatchers("/api/inventario/add").permitAll()
+                .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();

@@ -3,6 +3,7 @@ package com.bridgecare.inventory.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,9 +29,9 @@ public class InventarioController {
         return ResponseEntity.ok("Inventario created with ID: " + inventarioId);
     }
 
-    @GetMapping
-    public ResponseEntity<List<InventarioDTO>> getAllInventarios() {
-        return ResponseEntity.ok(inventarioService.getAllInventariosDTO());
+    @GetMapping("/all")
+    public ResponseEntity<List<Inventario>> getAllInventarios() {
+        return new ResponseEntity<List<Inventario>>(inventarioService.getAllInventarios(), HttpStatus.OK);
     }
     
 }

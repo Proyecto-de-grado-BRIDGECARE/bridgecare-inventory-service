@@ -101,6 +101,10 @@ public class InventarioService {
         throw new IllegalStateException("No JWT token found in authentication");
     }
 
+    public List<Inventario> getAllInventarios(){
+        return inventarioRepository.findAll();  
+    }
+
     public List<InventarioDTO> getAllInventariosDTO() {
         List<Inventario> inventarios = inventarioRepository.findAll();
 
