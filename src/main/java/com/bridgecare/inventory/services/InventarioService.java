@@ -52,10 +52,10 @@ import jakarta.transaction.Transactional;
 public class InventarioService {
 
     @Autowired
-    private InventarioRepository inventarioRepository;
+    private ApoyoRepository apoyoRepository;
 
     @Autowired
-    private PasoRepository pasoRepository;
+    private CargaRepository cargaRepository;
 
     @Autowired
     private DatosAdministrativosRepository datosAdministrativosRepository;
@@ -64,37 +64,37 @@ public class InventarioService {
     private DatosTecnicosRepository datosTecnicosRepository;
 
     @Autowired
-    private SuperestructuraRepository superestructuraRepository;
-
-    @Autowired
-    private SubestructuraRepository subestructuraRepository;
-
-    @Autowired
-    private ApoyoRepository apoyoRepository;
-
-    @Autowired
-    private MiembrosInteresadosRepository miembrosInteresadosRepository;
-
-    @Autowired
-    private PosicionGeograficaRepository posicionGeograficaRepository;
-
-    @Autowired
-    private CargaRepository cargaRepository;
+    private DetalleRepository detalleRepository;
 
     @Autowired
     private EstriboRepository estriboRepository;
 
     @Autowired
-    private DetalleRepository detalleRepository;
+    private InventarioRepository inventarioRepository;
 
     @Autowired
-    private SenialRepository senialRepository;
+    private MiembrosInteresadosRepository miembrosInteresadosRepository;
+
+    @Autowired
+    private PasoRepository pasoRepository;
 
     @Autowired
     private PilaRepository pilaRepository;
 
     @Autowired
+    private PosicionGeograficaRepository posicionGeograficaRepository;
+
+    @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private SenialRepository senialRepository;
+
+    @Autowired
+    private SubestructuraRepository subestructuraRepository;
+
+    @Autowired
+    private SuperestructuraRepository superestructuraRepository;
 
     @Transactional
     public void saveInventario(InventarioDTO request, Authentication authentication) {
@@ -174,35 +174,30 @@ public class InventarioService {
             final Subestructura subestructura = subestructuraRepository.save(savedSubestructura);
             inventario.setSubestructura(subestructura);
         
-            // Save Estribo
             if (request.getSubestructura().getEstribo() != null) {
                 Estribo estribo = mapDTOToEntity(request.getSubestructura().getEstribo(), Estribo.class);
                 estribo.setSubestructura(subestructura);
                 estriboRepository.save(estribo);
             }
         
-            // Save Pila
             if (request.getSubestructura().getPila() != null) {
                 Pila pila = mapDTOToEntity(request.getSubestructura().getPila(), Pila.class);
                 pila.setSubestructura(subestructura);
                 pilaRepository.save(pila);
             }
         
-            // Save Detalle
             if (request.getSubestructura().getDetalle() != null) {
                 Detalle detalle = mapDTOToEntity(request.getSubestructura().getDetalle(), Detalle.class);
                 detalle.setSubestructura(subestructura);
                 detalleRepository.save(detalle);
             }
         
-            // Save Senial
             if (request.getSubestructura().getSenial() != null) {
                 Senial senial = mapDTOToEntity(request.getSubestructura().getSenial(), Senial.class);
                 senial.setSubestructura(subestructura);
                 senialRepository.save(senial);
             }
         }
-        
 
         if (request.getApoyo() != null) {
             Apoyo apoyo = mapDTOToEntity(request.getApoyo(), Apoyo.class);
