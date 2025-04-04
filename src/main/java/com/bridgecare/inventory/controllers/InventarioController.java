@@ -25,8 +25,8 @@ public class InventarioController {
     
     @PostMapping("/add")
     public ResponseEntity<String> addInventario(@RequestBody InventarioDTO request, Authentication authentication) {
-        Long inventarioId = inventarioService.saveInventario(request, authentication);
-        return ResponseEntity.ok("Inventario created with ID: " + inventarioId);
+        inventarioService.saveInventario(request, authentication);
+        return ResponseEntity.ok("Inventario created");
     }
 
     @GetMapping("/all")

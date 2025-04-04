@@ -10,7 +10,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "apoyo")
+@Table(name = "superestructura")
 public class Superestructura {
 
     @Id

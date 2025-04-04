@@ -12,26 +12,94 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.bridgecare.common.models.dtos.PuenteDTO;
-import com.bridgecare.common.models.dtos.UsuarioDTO;
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.bridgecare.common.models.entities.Puente;
 import com.bridgecare.common.models.entities.Usuario;
 import com.bridgecare.inventory.models.dtos.InventarioDTO;
+import com.bridgecare.inventory.models.entities.Apoyo;
+import com.bridgecare.inventory.models.entities.Carga;
+import com.bridgecare.inventory.models.entities.DatosAdministrativos;
+import com.bridgecare.inventory.models.entities.DatosTecnicos;
+import com.bridgecare.inventory.models.entities.Detalle;
+import com.bridgecare.inventory.models.entities.Estribo;
 import com.bridgecare.inventory.models.entities.Inventario;
+import com.bridgecare.inventory.models.entities.MiembrosInteresados;
+import com.bridgecare.inventory.models.entities.Paso;
+import com.bridgecare.inventory.models.entities.Pila;
+import com.bridgecare.inventory.models.entities.PosicionGeografica;
+import com.bridgecare.inventory.models.entities.Senial;
+import com.bridgecare.inventory.models.entities.Subestructura;
+import com.bridgecare.inventory.models.entities.Superestructura;
+import com.bridgecare.inventory.repositories.ApoyoRepository;
+import com.bridgecare.inventory.repositories.CargaRepository;
+import com.bridgecare.inventory.repositories.DatosAdministrativosRepository;
+import com.bridgecare.inventory.repositories.DatosTecnicosRepository;
+import com.bridgecare.inventory.repositories.DetalleRepository;
+import com.bridgecare.inventory.repositories.EstriboRepository;
 import com.bridgecare.inventory.repositories.InventarioRepository;
+import com.bridgecare.inventory.repositories.MiembrosInteresadosRepository;
+import com.bridgecare.inventory.repositories.PasoRepository;
+import com.bridgecare.inventory.repositories.PilaRepository;
+import com.bridgecare.inventory.repositories.PosicionGeograficaRepository;
+import com.bridgecare.inventory.repositories.SenialRepository;
+import com.bridgecare.inventory.repositories.SubestructuraRepository;
+import com.bridgecare.inventory.repositories.SuperestructuraRepository;
+
 import jakarta.transaction.Transactional;
 
 @Service
 public class InventarioService {
 
     @Autowired
+    private ApoyoRepository apoyoRepository;
+
+    @Autowired
+    private CargaRepository cargaRepository;
+
+    @Autowired
+    private DatosAdministrativosRepository datosAdministrativosRepository;
+
+    @Autowired
+    private DatosTecnicosRepository datosTecnicosRepository;
+
+    @Autowired
+    private DetalleRepository detalleRepository;
+
+    @Autowired
+    private EstriboRepository estriboRepository;
+
+    @Autowired
     private InventarioRepository inventarioRepository;
+
+    @Autowired
+    private MiembrosInteresadosRepository miembrosInteresadosRepository;
+
+    @Autowired
+    private PasoRepository pasoRepository;
+
+    @Autowired
+    private PilaRepository pilaRepository;
+
+    @Autowired
+    private PosicionGeograficaRepository posicionGeograficaRepository;
 
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private SenialRepository senialRepository;
+
+    @Autowired
+    private SubestructuraRepository subestructuraRepository;
+
+    @Autowired
+    private SuperestructuraRepository superestructuraRepository;
+
     @Transactional
-    public Long saveInventario(InventarioDTO request, Authentication authentication) {
+    public void saveInventario(InventarioDTO request, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new IllegalStateException("Unauthorized: No valid token provided");
         }
@@ -55,29 +123,148 @@ public class InventarioService {
 
         Puente puente = response.getBody();
 
-        // Build Inventario
-        Inventario inventario = new Inventario();
-        inventario.setPuente(puente);
-        inventario.setObservaciones(request.getObservaciones());
+        Inventario savedInventario = new Inventario();
+        savedInventario.setPuente(puente);
+        savedInventario.setObservaciones(request.getObservaciones());
 
-        Usuario usuario = mapUsuarioDTOToUsuario(request.getUsuario());
-        inventario.setUsuario(usuario);
+        Usuario usuario = mapDTOToEntity(request.getUsuario(), Usuario.class);
+        savedInventario.setUsuario(usuario);
 
-        return inventarioRepository.save(inventario).getId();
+        final Inventario inventario = inventarioRepository.save(savedInventario);
+
+        if (request.getPasos() != null) {
+            List<Paso> pasos = request.getPasos()
+                    .stream()
+                    .map(pasoDTO -> {
+                        Paso paso = mapDTOToEntity(pasoDTO, Paso.class);
+                        paso.setInventario(inventario);
+                        return pasoRepository.save(paso);
+                    })
+                    .collect(Collectors.toList());
+            inventario.setPasos(pasos);
+        }
+
+        if (request.getDatosAdministrativos() != null) {
+            DatosAdministrativos datosAdministrativos = mapDTOToEntity(request.getDatosAdministrativos(),
+                    DatosAdministrativos.class);
+            datosAdministrativos.setInventario(inventario);
+            inventario.setDatosAdministrativos(datosAdministrativosRepository.save(datosAdministrativos));
+        }
+
+        if (request.getDatosTecnicos() != null) {
+            DatosTecnicos datosTecnicos = mapDTOToEntity(request.getDatosTecnicos(), DatosTecnicos.class);
+            datosTecnicos.setInventario(inventario);
+            inventario.setDatosTecnicos(datosTecnicosRepository.save(datosTecnicos));
+        }
+
+        if (request.getSuperestructuras() != null) {
+            List<Superestructura> superestructuras = request.getSuperestructuras()
+                    .stream()
+                    .map(superestructuraDTO -> {
+                        Superestructura superestructura = mapDTOToEntity(superestructuraDTO, Superestructura.class);
+                        superestructura.setInventario(inventario);
+                        return superestructuraRepository.save(superestructura);
+                    })
+                    .collect(Collectors.toList());
+            inventario.setSuperestructuras(superestructuras);
+        }
+
+        if (request.getSubestructura() != null) {
+            Subestructura savedSubestructura = new Subestructura();
+            savedSubestructura.setInventario(inventario);
+
+            final Subestructura subestructura = subestructuraRepository.save(savedSubestructura);
+            inventario.setSubestructura(subestructura);
+        
+            if (request.getSubestructura().getEstribo() != null) {
+                Estribo estribo = mapDTOToEntity(request.getSubestructura().getEstribo(), Estribo.class);
+                estribo.setSubestructura(subestructura);
+                estriboRepository.save(estribo);
+            }
+        
+            if (request.getSubestructura().getPila() != null) {
+                Pila pila = mapDTOToEntity(request.getSubestructura().getPila(), Pila.class);
+                pila.setSubestructura(subestructura);
+                pilaRepository.save(pila);
+            }
+        
+            if (request.getSubestructura().getDetalle() != null) {
+                Detalle detalle = mapDTOToEntity(request.getSubestructura().getDetalle(), Detalle.class);
+                detalle.setSubestructura(subestructura);
+                detalleRepository.save(detalle);
+            }
+        
+            if (request.getSubestructura().getSenial() != null) {
+                Senial senial = mapDTOToEntity(request.getSubestructura().getSenial(), Senial.class);
+                senial.setSubestructura(subestructura);
+                senialRepository.save(senial);
+            }
+        }
+
+        if (request.getApoyo() != null) {
+            Apoyo apoyo = mapDTOToEntity(request.getApoyo(), Apoyo.class);
+            apoyo.setInventario(inventario);
+            inventario.setApoyo(apoyoRepository.save(apoyo));
+        }
+
+        if (request.getMiembrosInteresados() != null) {
+            MiembrosInteresados miembrosInteresados = mapDTOToEntity(request.getMiembrosInteresados(),
+                    MiembrosInteresados.class);
+            miembrosInteresados.setInventario(inventario);
+            inventario.setMiembrosInteresados(miembrosInteresadosRepository.save(miembrosInteresados));
+        }
+        
+        if (request.getPosicionGeografica() != null) {
+            PosicionGeografica posicionGeografica = mapDTOToEntity(request.getPosicionGeografica(),
+                    PosicionGeografica.class);
+            posicionGeografica.setInventario(inventario);
+            inventario.setPosicionGeografica(posicionGeograficaRepository.save(posicionGeografica));
+        }
+
+        if (request.getCarga() != null) {
+            Carga carga = mapDTOToEntity(request.getCarga(), Carga.class);
+            carga.setInventario(inventario);
+            inventario.setCarga(cargaRepository.save(carga));
+        }
     }
 
-    private Usuario mapUsuarioDTOToUsuario(UsuarioDTO usuarioDTO) {
-        Usuario usuario = new Usuario();
-        usuario.setId(usuarioDTO.getId());
-        usuario.setNombres(usuarioDTO.getNombres());
-        usuario.setApellidos(usuarioDTO.getApellidos());
-        usuario.setIdentificacion(usuarioDTO.getIdentificacion());
-        usuario.setTipoUsuario(usuarioDTO.getTipoUsuario());
-        usuario.setCorreo(usuarioDTO.getCorreo());
-        usuario.setMunicipio(usuarioDTO.getMunicipio());
-        usuario.setContrasenia(usuarioDTO.getContrasenia());
+    private <D, E> E mapDTOToEntity(D dto, Class<E> entityClass) {
+        if (dto == null)
+            return null;
+        try {
+            E entity = entityClass.getDeclaredConstructor().newInstance();
 
-        return usuario;
+            Field[] dtoFields = dto.getClass().getDeclaredFields();
+
+            for (Field dtoField : dtoFields) {
+                dtoField.setAccessible(true);
+                try {
+                    Field entityField = entityClass.getDeclaredField(dtoField.getName());
+                    entityField.setAccessible(true);
+                    Object dtoValue = dtoField.get(dto);
+                    if (dtoValue == null) {
+                        entityField.set(entity, null);
+                    } else if (dtoField.getType().isPrimitive() ||
+                            dtoField.getType().getName().startsWith("java.lang") ||
+                            dtoField.getType().getName().startsWith("java.math") ||
+                            dtoField.getType().getName().startsWith("java.time")) {
+                        // Primitive, java.lang (String, Boolean), java.math (BigDecimal), java.time
+                        // (LocalDate)
+                        entityField.set(entity, dtoValue);
+                    } else {
+                        // Nested object: recursively map it
+                        Object entityValue = mapDTOToEntity(dtoValue, entityField.getType());
+                        entityField.set(entity, entityValue);
+                    }
+                } catch (NoSuchFieldException e) {
+                    continue;
+                }
+            }
+
+            return entity;
+        } catch (Exception e) {
+            throw new RuntimeException("Error mapping DTO to Entity", e);
+        }
     }
 
     private String extractUserEmailFromAuthentication(Authentication authentication) {
@@ -91,7 +278,7 @@ public class InventarioService {
             }
         }
         throw new IllegalStateException("Unable to extract user email from token");
-    }    
+    }
 
     private String getTokenFromAuthentication(Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()
@@ -100,51 +287,4 @@ public class InventarioService {
         }
         throw new IllegalStateException("No JWT token found in authentication");
     }
-
-    public List<Inventario> getAllInventarios(){
-        return inventarioRepository.findAll();  
-    }
-
-    public List<InventarioDTO> getAllInventariosDTO() {
-        List<Inventario> inventarios = inventarioRepository.findAll();
-
-        return inventarios.stream()
-            .map(this::mapToDTO)
-            .toList();
-    }
-
-    private InventarioDTO mapToDTO(Inventario inventario) {
-        InventarioDTO dto = new InventarioDTO();
-        dto.setObservaciones(inventario.getObservaciones());
-
-        dto.setUsuario(mapUsuarioToDTO(inventario.getUsuario()));
-        dto.setPuente(mapPuenteToDTO(inventario.getPuente()));
-        
-        return dto;
-    }
-
-    private UsuarioDTO mapUsuarioToDTO(Usuario usuario) {
-        UsuarioDTO dto = new UsuarioDTO();
-        dto.setId(usuario.getId());
-        dto.setNombres(usuario.getNombres());
-        dto.setApellidos(usuario.getApellidos());
-        dto.setCorreo(usuario.getCorreo());
-        dto.setTipoUsuario(usuario.getTipoUsuario());
-        dto.setIdentificacion(usuario.getIdentificacion());
-        dto.setMunicipio(usuario.getMunicipio());
-        return dto;
-    }
-
-    private PuenteDTO mapPuenteToDTO(Puente puente) {
-        PuenteDTO dto = new PuenteDTO();
-        dto.setId(puente.getId());
-        dto.setNombre(puente.getNombre());
-        dto.setIdentif(puente.getIdentif());
-        dto.setCarretera(puente.getCarretera());
-        dto.setPr(puente.getPr());
-        dto.setRegional(puente.getRegional());
-        return dto;
-    }
-
-    
 }
