@@ -20,7 +20,7 @@ public class InventarioController {
     
     @PostMapping("/add")
     public ResponseEntity<String> addInventario(@RequestBody InventarioDTO request, Authentication authentication) {
-        inventarioService.saveInventario(request, authentication);
-        return ResponseEntity.ok("Inventario created");
+        Long puenteId = inventarioService.saveInventario(request, authentication);
+        return ResponseEntity.ok(puenteId.toString());
     }
 }

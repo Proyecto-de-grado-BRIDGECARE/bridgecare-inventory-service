@@ -97,7 +97,7 @@ public class InventarioService {
     private SuperestructuraRepository superestructuraRepository;
 
     @Transactional
-    public void saveInventario(InventarioDTO request, Authentication authentication) {
+    public Long saveInventario(InventarioDTO request, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new IllegalStateException("Unauthorized: No valid token provided");
         }
@@ -224,6 +224,8 @@ public class InventarioService {
             carga.setInventario(inventario);
             inventario.setCarga(cargaRepository.save(carga));
         }
+
+        return puente.getId();
     }
 
     private <D, E> E mapDTOToEntity(D dto, Class<E> entityClass) {
