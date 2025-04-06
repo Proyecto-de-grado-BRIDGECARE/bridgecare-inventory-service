@@ -29,9 +29,9 @@ public class InventarioController {
         return ResponseEntity.ok("Inventario created");
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<Inventario>> getAllInventarios() {
-        return new ResponseEntity<List<Inventario>>(inventarioService.getAllInventarios(), HttpStatus.OK);
+    @GetMapping
+    public ResponseEntity<List<InventarioDTO>> getAllInventarios() {
+        return ResponseEntity.ok(inventarioService.getAllInventariosDTO());
     }
     
 }

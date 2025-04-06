@@ -16,6 +16,8 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.bridgecare.common.models.dtos.PuenteDTO;
+import com.bridgecare.common.models.dtos.UsuarioDTO;
 import com.bridgecare.common.models.entities.Puente;
 import com.bridgecare.common.models.entities.Usuario;
 import com.bridgecare.inventory.models.dtos.InventarioDTO;
@@ -286,5 +288,42 @@ public class InventarioService {
             return (String) authentication.getCredentials();
         }
         throw new IllegalStateException("No JWT token found in authentication");
+    }
+
+    public List<InventarioDTO> getAllInventariosDTO() {
+        List<Inventario> inventarios = inventarioRepository.findAll();
+    
+        return inventarios.stream()
+            .map(this::mapToDTO)
+            .collect(Collectors.toList());
+    }
+    
+    private InventarioDTO mapToDTO(Inventario inventario) {
+        InventarioDTO dto = new InventarioDTO();
+    
+        dto.setObservaciones(inventario.getObservaciones());
+    
+        // Mapear puente
+        PuenteDTO puenteDTO = new PuenteDTO();
+        puenteDTO.setId(inventario.getPuente().getId());
+        puenteDTO.setNombre(inventario.getPuente().getNombre());
+        puenteDTO.setIdentif(inventario.getPuente().getIdentif());
+        puenteDTO.setCarretera(inventario.getPuente().getCarretera());
+        puenteDTO.setPr(inventario.getPuente().getPr());
+        puenteDTO.setRegional(inventario.getPuente().getRegional());
+        dto.setPuente(puenteDTO);
+    
+        // Mapear usuario
+        UsuarioDTO usuarioDTO = new UsuarioDTO();
+        usuarioDTO.setId(inventario.getUsuario().getId());
+        usuarioDTO.setNombres(inventario.getUsuario().getNombres());
+        usuarioDTO.setApellidos(inventario.getUsuario().getApellidos());
+        usuarioDTO.setCorreo(inventario.getUsuario().getCorreo());
+        usuarioDTO.setIdentificacion(inventario.getUsuario().getIdentificacion());
+        usuarioDTO.setMunicipio(inventario.getUsuario().getMunicipio());
+        usuarioDTO.setTipoUsuario(inventario.getUsuario().getTipoUsuario());
+        dto.setUsuario(usuarioDTO);
+    
+        return dto;
     }
 }
