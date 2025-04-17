@@ -1,6 +1,8 @@
 package com.bridgecare.inventory.services;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -303,17 +306,64 @@ public class InventarioService {
         throw new IllegalStateException("No JWT token found in authentication");
     }
 
-    public List<InventarioDTO> getAllInventariosDTO() {
+
+    public InventarioDTO getInventarioById(Long id) {
+        Inventario inventario = inventarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Inventario no encontrado con id: " + id));
+        
+        return mapToDTO(inventario);
+    }
+
+    public InventarioDTO getInventarioByPuenteId(Long puenteId) {
+        Puente puente = new Puente();
+        puente.setId(puenteId);
+    
+        Optional<Inventario> inventarioOpt = inventarioRepository.findByPuente(puente);
+        if (inventarioOpt.isEmpty()) {
+            throw new RuntimeException("No se encontró un inventario para el puente con ID " + puenteId);
+        }
+    
+        return mapToDTO(inventarioOpt.get());
+    }
+
+    public List<InventarioDTO> getAllInventariosLight() {
         List<Inventario> inventarios = inventarioRepository.findAll();
     
-        return inventarios.stream()
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
+        return inventarios.stream().map(inv -> {
+            InventarioDTO dto = new InventarioDTO();
+            dto.setId(inv.getId());
+            dto.setObservaciones(inv.getObservaciones());
+    
+            // Puente
+            PuenteDTO puenteDTO = new PuenteDTO();
+            puenteDTO.setId(inv.getPuente().getId());
+            puenteDTO.setNombre(inv.getPuente().getNombre());
+            puenteDTO.setIdentif(inv.getPuente().getIdentif());
+            puenteDTO.setCarretera(inv.getPuente().getCarretera());
+            puenteDTO.setPr(inv.getPuente().getPr());
+            puenteDTO.setRegional(inv.getPuente().getRegional());
+            dto.setPuente(puenteDTO);
+    
+            // Usuario
+            UsuarioDTO usuarioDTO = new UsuarioDTO();
+            usuarioDTO.setId(inv.getUsuario().getId());
+            usuarioDTO.setNombres(inv.getUsuario().getNombres());
+            usuarioDTO.setApellidos(inv.getUsuario().getApellidos());
+            usuarioDTO.setCorreo(inv.getUsuario().getCorreo());
+            usuarioDTO.setIdentificacion(inv.getUsuario().getIdentificacion());
+            usuarioDTO.setMunicipio(inv.getUsuario().getMunicipio());
+            usuarioDTO.setTipoUsuario(inv.getUsuario().getTipoUsuario());
+            dto.setUsuario(usuarioDTO);
+    
+            return dto;
+        }).collect(Collectors.toList());
     }
+    
     
     private InventarioDTO mapToDTO(Inventario inventario) {
         InventarioDTO dto = new InventarioDTO();
 
+        dto.setId(inventario.getId());
         dto.setObservaciones(inventario.getObservaciones());
 
         // Puente
@@ -425,22 +475,27 @@ public class InventarioService {
         }
 
         // Pasos
-        List<PasoDTO> pasosDTO = inventario.getPasos().stream().map(p -> {
-            PasoDTO pasoDTO = new PasoDTO();
-            pasoDTO.setNumero(p.getNumero());
-            pasoDTO.setTipoPaso(p.getTipoPaso());
-            pasoDTO.setPrimero(p.getPrimero());
-            pasoDTO.setSupInf(p.getSupInf());
-            pasoDTO.setGaliboI(p.getGaliboI());
-            pasoDTO.setGaliboIm(p.getGaliboIm());
-            pasoDTO.setGaliboDm(p.getGaliboDm());
-            pasoDTO.setGaliboD(p.getGaliboD());
-            return pasoDTO;
-        }).collect(Collectors.toList());
-        dto.setPasos(pasosDTO);
+        if (inventario.getPasos() != null && !inventario.getPasos().isEmpty()) {
+            List<PasoDTO> pasosDTO = inventario.getPasos().stream().map(p -> {
+                PasoDTO pasoDTO = new PasoDTO();
+                pasoDTO.setNumero(p.getNumero());
+                pasoDTO.setTipoPaso(p.getTipoPaso());
+                pasoDTO.setPrimero(p.getPrimero());
+                pasoDTO.setSupInf(p.getSupInf());
+                pasoDTO.setGaliboI(p.getGaliboI());
+                pasoDTO.setGaliboIm(p.getGaliboIm());
+                pasoDTO.setGaliboDm(p.getGaliboDm());
+                pasoDTO.setGaliboD(p.getGaliboD());
+                return pasoDTO;
+            }).collect(Collectors.toList());
+        
+            dto.setPasos(pasosDTO);
+        }
+        
+        
 
-        // Subestructura
-        if (inventario.getSubestructura() != null) {
+         // Subestructura
+         if (inventario.getSubestructura() != null) {
             SubestructuraDTO sub = new SubestructuraDTO();
 
             if (inventario.getSubestructura().getEstribo() != null) {
@@ -479,16 +534,18 @@ public class InventarioService {
         }
 
         // Superestructuras
-        List<SuperestructuraDTO> superestructurasDTO = inventario.getSuperestructuras().stream().map(se -> {
-            SuperestructuraDTO s = new SuperestructuraDTO();
-            s.setTipo(se.getTipo());
-            s.setDisenioTipo(se.getDisenioTipo());
-            s.setTipoEstructuracionTransversal(se.getTipoEstructuracionTransversal());
-            s.setTipoEstructuracionLongitudinal(se.getTipoEstructuracionLongitudinal());
-            s.setMaterial(se.getMaterial());
-            return s;
-        }).collect(Collectors.toList());
-        dto.setSuperestructuras(superestructurasDTO);
+        if (inventario.getSuperestructuras() != null) {
+            List<SuperestructuraDTO> superestructurasDTO = inventario.getSuperestructuras().stream().map(se -> {
+                SuperestructuraDTO s = new SuperestructuraDTO();
+                s.setTipo(se.getTipo());
+                s.setDisenioTipo(se.getDisenioTipo());
+                s.setTipoEstructuracionTransversal(se.getTipoEstructuracionTransversal());
+                s.setTipoEstructuracionLongitudinal(se.getTipoEstructuracionLongitudinal());
+                s.setMaterial(se.getMaterial());
+                return s;
+            }).collect(Collectors.toList());
+            dto.setSuperestructuras(superestructurasDTO);
+        }
 
         return dto;
     }

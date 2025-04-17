@@ -1,5 +1,7 @@
 package com.bridgecare.inventory.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -34,6 +36,7 @@ public class Superestructura {
     private Integer material;
 
     @OneToOne
+    @JsonIgnore
     @JoinColumn(name = "inventario_id", nullable = false)
     private Inventario inventario;
 
