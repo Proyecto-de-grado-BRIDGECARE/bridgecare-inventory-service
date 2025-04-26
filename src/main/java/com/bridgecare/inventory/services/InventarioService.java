@@ -549,4 +549,237 @@ public class InventarioService {
 
         return dto;
     }
+
+    @Transactional
+    public void deleteInventario(Long id) {
+        Optional<Inventario> inventarioOpt = inventarioRepository.findById(id);
+        if (inventarioOpt.isPresent()) {
+            inventarioRepository.delete(inventarioOpt.get());
+        } else {
+            throw new RuntimeException("Inventario no encontrado con id: " + id);
+        }
+    }
+
+    @Transactional
+    public void updateInventario(Long id, InventarioDTO request) {
+        Inventario inventario = inventarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Inventario no encontrado con ID: " + id));
+
+        inventario.setObservaciones(request.getObservaciones());
+
+        // Puente (si se permite actualizar)
+        if (request.getPuente() != null) {
+            Puente puente = inventario.getPuente();
+            puente.setNombre(request.getPuente().getNombre());
+            puente.setIdentif(request.getPuente().getIdentif());
+            puente.setCarretera(request.getPuente().getCarretera());
+            puente.setPr(request.getPuente().getPr());
+            puente.setRegional(request.getPuente().getRegional());
+        }
+
+        // Apoyo
+        if (request.getApoyo() != null) {
+            Apoyo apoyo = inventario.getApoyo();
+            if (apoyo == null) {
+                apoyo = new Apoyo();
+                apoyo.setInventario(inventario);
+            }
+            apoyo.setFijoSobreEstribo(request.getApoyo().getFijoSobreEstribo());
+            apoyo.setMovilSobreEstribo(request.getApoyo().getMovilSobreEstribo());
+            apoyo.setFijoEnPila(request.getApoyo().getFijoEnPila());
+            apoyo.setMovilEnPila(request.getApoyo().getMovilEnPila());
+            apoyo.setFijoEnViga(request.getApoyo().getFijoEnViga());
+            apoyo.setMovilEnViga(request.getApoyo().getMovilEnViga());
+            apoyo.setVehiculoDisenio(request.getApoyo().getVehiculoDisenio());
+            apoyo.setClaseDistribucionCarga(request.getApoyo().getClaseDistribucionCarga());
+            inventario.setApoyo(apoyo);
+        }
+
+        // Carga
+        if (request.getCarga() != null) {
+            Carga carga = inventario.getCarga();
+            if (carga == null) {
+                carga = new Carga();
+                carga.setInventario(inventario);
+            }
+            carga.setLongitudLuzCritica(request.getCarga().getLongitudLuzCritica());
+            carga.setFactorClasificacion(request.getCarga().getFactorClasificacion());
+            carga.setFuerzaCortante(request.getCarga().getFuerzaCortante());
+            carga.setMomento(request.getCarga().getMomento());
+            carga.setLineaCargaPorRueda(request.getCarga().getLineaCargaPorRueda());
+            inventario.setCarga(carga);
+        }
+
+        if (request.getDatosAdministrativos() != null) {
+            DatosAdministrativos da = inventario.getDatosAdministrativos();
+            if (da == null) {
+                da = new DatosAdministrativos();
+                da.setInventario(inventario);
+            }
+            da.setAnioConstruccion(request.getDatosAdministrativos().getAnioConstruccion());
+            da.setAnioReconstruccion(request.getDatosAdministrativos().getAnioReconstruccion());
+            da.setDireccionAbscCarretera(request.getDatosAdministrativos().getDireccionAbscCarretera());
+            da.setRequisitosInspeccion(request.getDatosAdministrativos().getRequisitosInspeccion());
+            da.setNumeroSeccionesInspeccion(request.getDatosAdministrativos().getNumeroSeccionesInspeccion());
+            da.setEstacionConteo(request.getDatosAdministrativos().getEstacionConteo());
+            da.setFechaRecoleccionDatos(request.getDatosAdministrativos().getFechaRecoleccionDatos());
+            inventario.setDatosAdministrativos(da);
+        }
+
+        if (request.getDatosTecnicos() != null) {
+            DatosTecnicos dt = inventario.getDatosTecnicos();
+            if (dt == null) {
+                dt = new DatosTecnicos();
+                dt.setInventario(inventario);
+            }
+            dt.setNumeroLuces(request.getDatosTecnicos().getNumeroLuces());
+            dt.setLongitudLuzMenor(request.getDatosTecnicos().getLongitudLuzMenor());
+            dt.setLongitudLuzMayor(request.getDatosTecnicos().getLongitudLuzMayor());
+            dt.setLongitudTotal(request.getDatosTecnicos().getLongitudTotal());
+            dt.setAnchoTablero(request.getDatosTecnicos().getAnchoTablero());
+            dt.setAnchoSeparador(request.getDatosTecnicos().getAnchoSeparador());
+            dt.setAnchoAndenIzq(request.getDatosTecnicos().getAnchoAndenIzq());
+            dt.setAnchoAndenDer(request.getDatosTecnicos().getAnchoAndenDer());
+            dt.setAnchoCalzada(request.getDatosTecnicos().getAnchoCalzada());
+            dt.setAnchoEntreBordillos(request.getDatosTecnicos().getAnchoEntreBordillos());
+            dt.setAnchoAcceso(request.getDatosTecnicos().getAnchoAcceso());
+            dt.setAlturaPilas(request.getDatosTecnicos().getAlturaPilas());
+            dt.setAlturaEstribos(request.getDatosTecnicos().getAlturaEstribos());
+            dt.setLongitudApoyoPilas(request.getDatosTecnicos().getLongitudApoyoPilas());
+            dt.setLongitudApoyoEstribos(request.getDatosTecnicos().getLongitudApoyoEstribos());
+            dt.setPuenteTerraplen(request.getDatosTecnicos().getPuenteTerraplen());
+            dt.setPuenteCurvaTangente(request.getDatosTecnicos().getPuenteCurvaTangente());
+            dt.setEsviajamiento(request.getDatosTecnicos().getEsviajamiento());
+            inventario.setDatosTecnicos(dt);
+        }
+
+        if (request.getMiembrosInteresados() != null) {
+            MiembrosInteresados mi = inventario.getMiembrosInteresados();
+            if (mi == null) {
+                mi = new MiembrosInteresados();
+                mi.setInventario(inventario);
+            }
+            mi.setPropietario(request.getMiembrosInteresados().getPropietario());
+            mi.setDepartamento(request.getMiembrosInteresados().getDepartamento());
+            mi.setAdministradorVial(request.getMiembrosInteresados().getAdministradorVial());
+            mi.setProyectista(request.getMiembrosInteresados().getProyectista());
+            mi.setMunicipio(request.getMiembrosInteresados().getMunicipio());
+            inventario.setMiembrosInteresados(mi);
+        }
+
+        if (request.getPosicionGeografica() != null) {
+            PosicionGeografica pg = inventario.getPosicionGeografica();
+            if (pg == null) {
+                pg = new PosicionGeografica();
+                pg.setInventario(inventario);
+            }
+            pg.setLatitud(request.getPosicionGeografica().getLatitud());
+            pg.setLongitud(request.getPosicionGeografica().getLongitud());
+            pg.setAltitud(request.getPosicionGeografica().getAltitud());
+            pg.setCoeficienteAceleracionSismica(request.getPosicionGeografica().getCoeficienteAceleracionSismica());
+            pg.setPasoCauce(request.getPosicionGeografica().getPasoCauce());
+            pg.setExisteVariante(request.getPosicionGeografica().getExisteVariante());
+            pg.setLongitudVariante(request.getPosicionGeografica().getLongitudVariante());
+            pg.setEstado(request.getPosicionGeografica().getEstado());
+            inventario.setPosicionGeografica(pg);
+        }
+
+        if (request.getSubestructura() != null) {
+            Subestructura sub = inventario.getSubestructura();
+            if (sub == null) {
+                sub = new Subestructura();
+                sub.setInventario(inventario);
+            }
+        
+            if (request.getSubestructura().getEstribo() != null) {
+                Estribo e = sub.getEstribo();
+                if (e == null) {
+                    e = new Estribo();
+                    e.setSubestructura(sub);
+                }
+                e.setTipo(request.getSubestructura().getEstribo().getTipo());
+                e.setMaterial(request.getSubestructura().getEstribo().getMaterial());
+                e.setTipoCimentacion(request.getSubestructura().getEstribo().getTipoCimentacion());
+                sub.setEstribo(e);
+            }
+        
+            if (request.getSubestructura().getDetalle() != null) {
+                Detalle d = sub.getDetalle();
+                if (d == null) {
+                    d = new Detalle();
+                    d.setSubestructura(sub);
+                }
+                d.setTipoBaranda(request.getSubestructura().getDetalle().getTipoBaranda());
+                d.setSuperficieRodadura(request.getSubestructura().getDetalle().getSuperficieRodadura());
+                d.setJuntaExpansion(request.getSubestructura().getDetalle().getJuntaExpansion());
+                sub.setDetalle(d);
+            }
+        
+            if (request.getSubestructura().getSenial() != null) {
+                Senial s = sub.getSenial();
+                if (s == null) {
+                    s = new Senial();
+                    s.setSubestructura(sub);
+                }
+                s.setCargaMaxima(request.getSubestructura().getSenial().getCargaMaxima());
+                s.setVelocidadMaxima(request.getSubestructura().getSenial().getVelocidadMaxima());
+                s.setOtra(request.getSubestructura().getSenial().getOtra());
+                sub.setSenial(s);
+            }
+        
+            if (request.getSubestructura().getPila() != null) {
+                Pila p = sub.getPila();
+                if (p == null) {
+                    p = new Pila();
+                    p.setSubestructura(sub);
+                }
+                p.setTipo(request.getSubestructura().getPila().getTipo());
+                p.setMaterial(request.getSubestructura().getPila().getMaterial());
+                p.setTipoCimentacion(request.getSubestructura().getPila().getTipoCimentacion());
+                sub.setPila(p);
+            }
+        
+            inventario.setSubestructura(sub);
+        }
+
+        superestructuraRepository.deleteAll(inventario.getSuperestructuras());
+
+        if (request.getSuperestructuras() != null) {
+            List<Superestructura> nuevas = request.getSuperestructuras().stream().map(dto -> {
+                Superestructura s = new Superestructura();
+                s.setTipo(dto.getTipo());
+                s.setDisenioTipo(dto.getDisenioTipo());
+                s.setTipoEstructuracionTransversal(dto.getTipoEstructuracionTransversal());
+                s.setTipoEstructuracionLongitudinal(dto.getTipoEstructuracionLongitudinal());
+                s.setMaterial(dto.getMaterial());
+                s.setInventario(inventario);
+                return s;
+            }).collect(Collectors.toList());
+            inventario.setSuperestructuras(nuevas);
+        }
+
+        // Eliminar pasos existentes y guardar los nuevos
+        pasoRepository.deleteAll(inventario.getPasos());
+        if (request.getPasos() != null) {
+            List<Paso> nuevosPasos = request.getPasos().stream().map(dto -> {
+                Paso paso = new Paso();
+                paso.setNumero(dto.getNumero());
+                paso.setTipoPaso(dto.getTipoPaso());
+                paso.setPrimero(dto.getPrimero());
+                paso.setSupInf(dto.getSupInf());
+                paso.setGaliboI(dto.getGaliboI());
+                paso.setGaliboIm(dto.getGaliboIm());
+                paso.setGaliboDm(dto.getGaliboDm());
+                paso.setGaliboD(dto.getGaliboD());
+                paso.setInventario(inventario);
+                return paso;
+            }).collect(Collectors.toList());
+            inventario.setPasos(nuevosPasos);
+        }
+
+        // Guarda cambios
+        inventarioRepository.save(inventario);
+    }
+
+
 }
