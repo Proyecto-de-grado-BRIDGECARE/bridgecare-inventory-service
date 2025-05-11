@@ -1,7 +1,6 @@
 package com.bridgecare.inventory.services;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import com.bridgecare.common.models.dtos.PuenteDTO;
@@ -551,7 +548,12 @@ public class InventarioService {
     }
 
     @Transactional
-    public void deleteInventario(Long id) {
+    public void deleteInventario(Long id, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("Unauthorized: No valid token provided");
+        }
+
+
         Optional<Inventario> inventarioOpt = inventarioRepository.findById(id);
         if (inventarioOpt.isPresent()) {
             inventarioRepository.delete(inventarioOpt.get());
@@ -561,7 +563,11 @@ public class InventarioService {
     }
 
     @Transactional
-    public void updateInventario(Long id, InventarioDTO request) {
+    public void updateInventario(Long id, InventarioDTO request, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("Unauthorized: No valid token provided");
+        }
+
         Inventario inventario = inventarioRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Inventario no encontrado con ID: " + id));
 

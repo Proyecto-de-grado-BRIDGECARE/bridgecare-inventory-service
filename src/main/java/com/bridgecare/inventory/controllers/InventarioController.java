@@ -3,7 +3,6 @@ package com.bridgecare.inventory.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import com.bridgecare.inventory.models.dtos.InventarioDTO;
-import com.bridgecare.inventory.models.entities.Inventario;
 import com.bridgecare.inventory.services.InventarioService;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -54,14 +51,14 @@ public class InventarioController {
         return ResponseEntity.ok(dto);
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteInventario(@PathVariable Long id) {
-        inventarioService.deleteInventario(id);
+    public ResponseEntity<Void> deleteInventario(@PathVariable Long id, Authentication authentication) {
+        inventarioService.deleteInventario(id, authentication);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateInventario(@PathVariable Long id, @RequestBody InventarioDTO request) {
-        inventarioService.updateInventario(id, request);
+    public ResponseEntity<Void> updateInventario(@PathVariable Long id, @RequestBody InventarioDTO request, Authentication authentication) {
+        inventarioService.updateInventario(id, request, authentication);
         return ResponseEntity.noContent().build();
     }
 }
