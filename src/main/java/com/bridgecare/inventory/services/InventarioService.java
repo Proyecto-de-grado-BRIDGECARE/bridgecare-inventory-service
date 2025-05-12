@@ -345,15 +345,20 @@ public class InventarioService {
             dto.setPuente(puenteDTO);
     
             // Usuario
-            UsuarioDTO usuarioDTO = new UsuarioDTO();
-            usuarioDTO.setId(inv.getUsuario().getId());
-            usuarioDTO.setNombres(inv.getUsuario().getNombres());
-            usuarioDTO.setApellidos(inv.getUsuario().getApellidos());
-            usuarioDTO.setCorreo(inv.getUsuario().getCorreo());
-            usuarioDTO.setIdentificacion(inv.getUsuario().getIdentificacion());
-            usuarioDTO.setMunicipio(inv.getUsuario().getMunicipio());
-            usuarioDTO.setTipoUsuario(inv.getUsuario().getTipoUsuario());
-            dto.setUsuario(usuarioDTO);
+             if (inv.getUsuario() != null) {
+                UsuarioDTO usuarioDTO = new UsuarioDTO();
+                usuarioDTO.setId(inv.getUsuario().getId());
+                usuarioDTO.setNombres(inv.getUsuario().getNombres());
+                usuarioDTO.setApellidos(inv.getUsuario().getApellidos());
+                usuarioDTO.setCorreo(inv.getUsuario().getCorreo());
+                usuarioDTO.setIdentificacion(inv.getUsuario().getIdentificacion());
+                usuarioDTO.setMunicipio(inv.getUsuario().getMunicipio());
+                usuarioDTO.setTipoUsuario(inv.getUsuario().getTipoUsuario());
+                dto.setUsuario(usuarioDTO);
+            } else {
+                dto.setUsuario(null); // o un DTO vacío si prefieres
+            }
+            
     
             return dto;
         }).collect(Collectors.toList());
@@ -377,15 +382,19 @@ public class InventarioService {
         dto.setPuente(puenteDTO);
 
         // Usuario
-        UsuarioDTO usuarioDTO = new UsuarioDTO();
-        usuarioDTO.setId(inventario.getUsuario().getId());
-        usuarioDTO.setNombres(inventario.getUsuario().getNombres());
-        usuarioDTO.setApellidos(inventario.getUsuario().getApellidos());
-        usuarioDTO.setCorreo(inventario.getUsuario().getCorreo());
-        usuarioDTO.setIdentificacion(inventario.getUsuario().getIdentificacion());
-        usuarioDTO.setMunicipio(inventario.getUsuario().getMunicipio());
-        usuarioDTO.setTipoUsuario(inventario.getUsuario().getTipoUsuario());
-        dto.setUsuario(usuarioDTO);
+        if (inventario.getUsuario() != null) {
+                UsuarioDTO usuarioDTO = new UsuarioDTO();
+                usuarioDTO.setId(inventario.getUsuario().getId());
+                usuarioDTO.setNombres(inventario.getUsuario().getNombres());
+                usuarioDTO.setApellidos(inventario.getUsuario().getApellidos());
+                usuarioDTO.setCorreo(inventario.getUsuario().getCorreo());
+                usuarioDTO.setIdentificacion(inventario.getUsuario().getIdentificacion());
+                usuarioDTO.setMunicipio(inventario.getUsuario().getMunicipio());
+                usuarioDTO.setTipoUsuario(inventario.getUsuario().getTipoUsuario());
+                dto.setUsuario(usuarioDTO);
+            } else {
+                dto.setUsuario(null); // o un DTO vacío si prefieres
+            }
 
         // Apoyo
         if (inventario.getApoyo() != null) {
