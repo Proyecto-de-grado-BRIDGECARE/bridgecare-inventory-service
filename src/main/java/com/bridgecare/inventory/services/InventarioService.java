@@ -1,7 +1,7 @@
 package com.bridgecare.inventory.services;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import com.bridgecare.common.models.dtos.PuenteDTO;
@@ -560,7 +558,12 @@ public class InventarioService {
     }
 
     @Transactional
-    public void deleteInventario(Long id) {
+    public void deleteInventario(Long id, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("Unauthorized: No valid token provided");
+        }
+
+
         Optional<Inventario> inventarioOpt = inventarioRepository.findById(id);
         if (inventarioOpt.isPresent()) {
             inventarioRepository.delete(inventarioOpt.get());
@@ -570,7 +573,11 @@ public class InventarioService {
     }
 
     @Transactional
-    public void updateInventario(Long id, InventarioDTO request) {
+    public void updateInventario(Long id, InventarioDTO request, Authentication authentication) {
+        // if (authentication == null || !authentication.isAuthenticated()) {
+        //     throw new IllegalStateException("Unauthorized: No valid token provided");
+        // }
+
         Inventario inventario = inventarioRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Inventario no encontrado con ID: " + id));
 
@@ -751,10 +758,18 @@ public class InventarioService {
             inventario.setSubestructura(sub);
         }
 
-        superestructuraRepository.deleteAll(inventario.getSuperestructuras());
+        // superestructuraRepository.deleteAll(inventario.getSuperestructuras());
 
         if (request.getSuperestructuras() != null) {
-            List<Superestructura> nuevas = request.getSuperestructuras().stream().map(dto -> {
+            List<Superestructura> superestructuras = inventario.getSuperestructuras();
+            if (superestructuras == null) {
+                superestructuras = new ArrayList<>();
+                inventario.setSuperestructuras(superestructuras);
+            } else {
+                superestructuras.clear(); // Elimina huérfanos correctamente
+            }
+
+            for (SuperestructuraDTO dto : request.getSuperestructuras()) {
                 Superestructura s = new Superestructura();
                 s.setTipo(dto.getTipo());
                 s.setDisenioTipo(dto.getDisenioTipo());
@@ -762,15 +777,23 @@ public class InventarioService {
                 s.setTipoEstructuracionLongitudinal(dto.getTipoEstructuracionLongitudinal());
                 s.setMaterial(dto.getMaterial());
                 s.setInventario(inventario);
-                return s;
-            }).collect(Collectors.toList());
-            inventario.setSuperestructuras(nuevas);
+                superestructuras.add(s);
+            }
         }
 
         // Eliminar pasos existentes y guardar los nuevos
-        pasoRepository.deleteAll(inventario.getPasos());
+        // pasoRepository.deleteAll(inventario.getPasos());
+        // PASOS
         if (request.getPasos() != null) {
-            List<Paso> nuevosPasos = request.getPasos().stream().map(dto -> {
+            List<Paso> pasos = inventario.getPasos();
+            if (pasos == null) {
+                pasos = new ArrayList<>();
+                inventario.setPasos(pasos);
+            } else {
+                pasos.clear(); // Elimina huérfanos correctamente
+            }
+
+            for (PasoDTO dto : request.getPasos()) {
                 Paso paso = new Paso();
                 paso.setNumero(dto.getNumero());
                 paso.setTipoPaso(dto.getTipoPaso());
@@ -781,9 +804,8 @@ public class InventarioService {
                 paso.setGaliboDm(dto.getGaliboDm());
                 paso.setGaliboD(dto.getGaliboD());
                 paso.setInventario(inventario);
-                return paso;
-            }).collect(Collectors.toList());
-            inventario.setPasos(nuevosPasos);
+                pasos.add(paso);
+            }
         }
 
         // Guarda cambios
