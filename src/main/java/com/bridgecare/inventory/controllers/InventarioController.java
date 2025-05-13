@@ -55,6 +55,13 @@ public class InventarioController {
         inventarioService.deleteInventario(id, authentication);
         return ResponseEntity.noContent().build();
     }
+    @DeleteMapping("/delete/by-puente/{puenteId}")
+    public ResponseEntity<?> deleteByPuente(@PathVariable Long puenteId) {
+        System.out.println("Recibida petición DELETE de inventario por puenteId: " + puenteId);
+        inventarioService.deleteByPuenteId(puenteId);
+        return ResponseEntity.ok("Inventario eliminado");
+    }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateInventario(@PathVariable Long id, @RequestBody InventarioDTO request, Authentication authentication) {

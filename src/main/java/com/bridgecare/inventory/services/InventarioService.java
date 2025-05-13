@@ -114,6 +114,7 @@ public class InventarioService {
     @Autowired
     private SuperestructuraRepository superestructuraRepository;
 
+
     @Transactional
     public void saveInventario(InventarioDTO request, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -810,6 +811,11 @@ public class InventarioService {
 
         // Guarda cambios
         inventarioRepository.save(inventario);
+    }
+
+    @Transactional
+    public void deleteByPuenteId(Long puenteId) {
+        inventarioRepository.deleteByPuenteId(puenteId);
     }
 
 
