@@ -2,6 +2,8 @@ package com.bridgecare.inventory.models.entities;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -45,6 +47,7 @@ public class Paso {
     private BigDecimal galiboD;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "inventario_id", nullable = false)
     private Inventario inventario;
 

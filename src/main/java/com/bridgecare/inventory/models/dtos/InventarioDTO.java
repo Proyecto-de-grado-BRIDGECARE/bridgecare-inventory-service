@@ -10,6 +10,7 @@ import lombok.Data;
 
 @Data
 public class InventarioDTO {
+    private Long id;
 
     private String observaciones;
 
