@@ -1,5 +1,7 @@
 services:
   inventory-service:
+    container_name: inventory-service
+    image: inventory-service
     build:
       context: .
       args:

@@ -33,7 +33,7 @@ public class InventarioController {
         return ResponseEntity.ok(puenteId.toString());
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<InventarioDTO>> getAllInventarios() {
         return ResponseEntity.ok(inventarioService.getAllInventariosLight());
     }
