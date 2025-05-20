@@ -35,11 +35,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-<<<<<<< HEAD
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "https://bridgecare.com.co"));
-=======
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "https://api.bridgecare.com.co"));
->>>>>>> a668104 (cors)
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
