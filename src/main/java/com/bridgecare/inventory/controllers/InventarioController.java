@@ -32,7 +32,7 @@ public class InventarioController {
         return ResponseEntity.ok(puenteId.toString());
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<InventarioDTO>> getAllInventarios() {
         return ResponseEntity.ok(inventarioService.getAllInventariosLight());
     }
@@ -61,7 +61,6 @@ public class InventarioController {
         inventarioService.deleteByPuenteId(puenteId);
         return ResponseEntity.ok("Inventario eliminado");
     }
-
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateInventario(@PathVariable Long id, @RequestBody InventarioDTO request, Authentication authentication) {
