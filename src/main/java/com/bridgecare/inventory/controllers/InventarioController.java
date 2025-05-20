@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import com.bridgecare.inventory.models.dtos.InventarioDTO;
+import com.bridgecare.inventory.models.dtos.informaciónGeograficaDTO;
 import com.bridgecare.inventory.services.InventarioService;
 
 
@@ -62,10 +63,15 @@ public class InventarioController {
         return ResponseEntity.ok("Inventario eliminado");
     }
 
-
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateInventario(@PathVariable Long id, @RequestBody InventarioDTO request, Authentication authentication) {
         inventarioService.updateInventario(id, request, authentication);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/mapa")
+    public ResponseEntity<List<informaciónGeograficaDTO>> getInventariosParaMapa() {
+        return ResponseEntity.ok(inventarioService.getInventariosGeograficos());
+    }
+
 }

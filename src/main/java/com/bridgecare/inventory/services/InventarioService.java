@@ -29,6 +29,7 @@ import com.bridgecare.inventory.models.dtos.PosicionGeograficaDTO;
 import com.bridgecare.inventory.models.dtos.SenialDTO;
 import com.bridgecare.inventory.models.dtos.SubestructuraDTO;
 import com.bridgecare.inventory.models.dtos.SuperestructuraDTO;
+import com.bridgecare.inventory.models.dtos.informaciónGeograficaDTO;
 import com.bridgecare.inventory.models.dtos.ApoyoDTO;
 import com.bridgecare.inventory.models.dtos.CargaDTO;
 import com.bridgecare.inventory.models.dtos.DatosAdministrativosDTO;
@@ -818,6 +819,35 @@ public class InventarioService {
     @Transactional
     public void deleteByPuenteId(Long puenteId) {
         inventarioRepository.deleteByPuenteId(puenteId);
+    }
+
+    public List<informaciónGeograficaDTO> getInventariosGeograficos() {
+        List<Inventario> inventarios = inventarioRepository.findAll();
+
+        return inventarios.stream()
+            .filter(inv -> inv.getPosicionGeografica() != null)
+            .map(inv -> {
+                informaciónGeograficaDTO geo = new informaciónGeograficaDTO();
+                geo.setInventarioId(inv.getId());
+                geo.setNombrePuente(inv.getPuente().getNombre());
+                geo.setRegional(inv.getPuente().getRegional());
+
+                PosicionGeografica pg = inv.getPosicionGeografica();
+                PosicionGeograficaDTO pgDTO = new PosicionGeograficaDTO();
+                pgDTO.setLatitud(pg.getLatitud());
+                pgDTO.setLongitud(pg.getLongitud());
+                pgDTO.setAltitud(pg.getAltitud());
+                pgDTO.setCoeficienteAceleracionSismica(pg.getCoeficienteAceleracionSismica());
+                pgDTO.setPasoCauce(pg.getPasoCauce());
+                pgDTO.setExisteVariante(pg.getExisteVariante());
+                pgDTO.setLongitudVariante(pg.getLongitudVariante());
+                pgDTO.setEstado(pg.getEstado());
+
+                geo.setPosicionGeografica(pgDTO);
+
+                return geo;
+            })
+            .collect(Collectors.toList());
     }
 
 
