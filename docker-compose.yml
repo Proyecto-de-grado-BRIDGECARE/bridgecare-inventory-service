@@ -2,6 +2,7 @@ services:
   inventory-service:
     container_name: inventory-service
     image: inventory-service
+    restart: unless-stopped
     build:
       context: .
       args:
