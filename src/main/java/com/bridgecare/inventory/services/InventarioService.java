@@ -127,7 +127,7 @@ public class InventarioService {
         System.out.println("userEmail: " + userEmail);
 
         // Save Puente via BridgeService
-        String puenteUrl = "\"http://bridge-service:8081/api/puentes/add";
+        String puenteUrl = "http://bridge-service:8081/api/puentes/add";
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + getTokenFromAuthentication(authentication));
         headers.setContentType(MediaType.APPLICATION_JSON);
